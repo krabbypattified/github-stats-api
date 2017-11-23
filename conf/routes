@@ -1,1 +1,1 @@
-GET  /  @controllers.ApplicationController.index
+GET  /         controllers.ApplicationController.index

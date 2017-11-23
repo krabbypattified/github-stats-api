@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="SBT: org.sangria-graphql:sangria-play-json_2.12:1.0.4:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.sangria-graphql/sangria-play-json_2.12/jars/sangria-play-json_2.12-1.0.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.sangria-graphql/sangria-play-json_2.12/srcs/sangria-play-json_2.12-1.0.4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
