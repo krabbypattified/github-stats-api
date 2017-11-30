@@ -11,7 +11,7 @@ import models._
 
 class ApplicationController @Inject() (cc: ControllerComponents) extends AbstractController(cc) {
 
-  def index = Action {
+  def index = Action { request =>
 
     val proxy = new Proxy(schema, Http("https://api.github.com/graphql").header("Authorization", "token 87c00a6918686a8c106f3c4943067bdfd998d52e"))
     val response = proxy.send(
@@ -32,6 +32,9 @@ class ApplicationController @Inject() (cc: ControllerComponents) extends Abstrac
       Some("Um"),
       Some("{}")
     )
+
+    println(request.queryString)
+    //request.queryString.map { case (k,v) => k -> v.mkString }
 
     Ok(response)
 
