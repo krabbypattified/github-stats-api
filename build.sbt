@@ -8,10 +8,10 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       guice,
       "org.sangria-graphql" %% "sangria" % "1.3.2",
-      "org.sangria-graphql" %% "sangria-play-json" % "1.0.4"
-      /*"io.circe" %% "circe-core" % "0.8.0",
+      "org.scalaj" %% "scalaj-http" % "2.3.0",
+      "io.circe" %% "circe-core" % "0.8.0",
       "io.circe" %% "circe-generic" % "0.8.0",
-      "io.circe" %% "circe-parser" % "0.8.0",*/
-      //"org.scala-lang.modules" %% "scala-async" % "0.9.6"
+      "io.circe" %% "circe-parser" % "0.8.0",
+      "io.circe" %% "circe-optics" % "0.8.0"
     ),
   )
