@@ -61,9 +61,10 @@ class Proxifier(val schemaAst: Document) {
     case _ => "";
   }
 
-
   def unproxify(_data: String): String = {
-    parse(_data).getOrElse(Json.Null).hcursor.downField("data").withFocus(data => {
+    val data = parse(_data).getOrElse(Json.Null).hcursor.downField("data")
+    if (data.fields.isEmpty) return s""" {"errors": [${_data}] } """
+    data.withFocus(data => {
       if (data.asObject.isDefined) data.asObject.get.toMap.map(f => f._2.remap(f._1, "Query", proxy.unproxifier)).asJson
       else data
     }).top.get.toString

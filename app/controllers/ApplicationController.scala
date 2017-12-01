@@ -6,38 +6,21 @@ import play.api.mvc.{AbstractController, ControllerComponents}
 
 import scalaj.http.Http
 import Proxy.Proxy
-import sangria.macros._
 import models._
+import io.circe.parser.decode
 
 class ApplicationController @Inject() (cc: ControllerComponents) extends AbstractController(cc) {
 
-  def index = Action { request =>
+  val proxy = new Proxy(schema, Http("https://api.github.com/graphql").header("Authorization", "token 90b87fdb8f846f2b232e67121d4c9b72c307ef31"))
 
-    val proxy = new Proxy(schema, Http("https://api.github.com/graphql").header("Authorization", "token 87c00a6918686a8c106f3c4943067bdfd998d52e"))
-    val response = proxy.send(
-      gql"""
-      query Um {
-        search(query: "react", limit: 1) {
-          ...repo
-        }
-      }
+  def get = Action { request =>
+    val queryMap = request.queryString.map { case (k,v) => k -> v.mkString }
+    Ok(proxy.send(queryMap))
+  }
 
-      fragment repo on Repository {
-        name
-        commits {
-          times
-        }
-      }
-      """,
-      Some("Um"),
-      Some("{}")
-    )
-
-    println(request.queryString)
-    //request.queryString.map { case (k,v) => k -> v.mkString }
-
-    Ok(response)
-
+  def post = Action { request =>
+    val postMap = decode[Map[String, String]](request.body.asText.getOrElse("[]")).getOrElse(Map())
+    Ok(proxy.send(postMap))
   }
 
 }

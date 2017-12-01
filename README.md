@@ -1,5 +1,3 @@
-Want to start your [Play 2](https://www.playframework.com/documentation/2.6.x/Home) development, but don't feel like dealing with all the extra fluff that comes with [the starter projects](https://playframework.com/download#starters) or the example applications?
-
 # The minimal setup for a Play framework 2.6.6 project
 
 * Install [Sbt](http://www.scala-sbt.org/index.html)
@@ -8,3 +6,8 @@ Want to start your [Play 2](https://www.playframework.com/documentation/2.6.x/Ho
 * In the root of this repo: `sbt`
 * In the Sbt console that just opened: `run`
 * See [http://localhost:9000](http://localhost:9000)
+
+
+For IntelliJ debugging:
+`sbt -jvm-debug 9999 run`
+See https://stackoverflow.com/questions/5390178/how-to-make-the-debugging-in-playframework-in-intellij-idea#answer-22195552

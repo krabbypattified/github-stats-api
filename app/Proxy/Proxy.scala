@@ -2,6 +2,7 @@ package Proxy
 
 import Helpers._
 import sangria.ast.Document
+import sangria.parser.QueryParser
 
 import scalaj.http._
 
@@ -9,21 +10,34 @@ class Proxy(val schemaAst: Document, val endpoint: HttpRequest) {
 
   var proxifier: Proxifier = new Proxifier(schemaAst)
 
-  def send(query: Document, operationName: Option[String] = None, variables: Option[String] = None): String = {
-    // Handle syntax error
-    val errors = proxifier.validate(query)
-    if (errors.nonEmpty) return s"{errors:[${errors.toString}]}"
+  def send(parameters: Map[String, String]): String = {
+    val query = parameters.get("query")
+    val operationName = parameters.get("operationName")
+    val variables = parameters.get("variables")
+
+    // Parse query
+    if (query.isEmpty) return """{"errors":["message":"Must supply a query."]}"""
+    var queryDoc = Document.emptyStub
+    val tryQuery = QueryParser.parse(query.get).toOption
+    if (tryQuery.isEmpty) return """{"errors":["message":"Unable to parse query. Check your syntax."]}"""
+    else queryDoc = tryQuery.get
+
+    // Validate query
+    val errors = proxifier.validate(queryDoc)
+    if (errors.nonEmpty) return s"""{"errors":["message":${errors.toString.escape}]}"""
 
     // Proxify
-    val postData = f"""{
-      "operationName": ${operationName.getOrElse("").escape},
-      "variables": ${variables.getOrElse("{}").escape},
-      "query": ${proxifier.proxify(query).escape}
-    }"""
-    val res = endpoint.postData(postData).asString
-    val body = proxifier.unproxify(res.body)
+    var postData = "{"
+    if (operationName.isDefined) postData += s""" "operationName": ${operationName.getOrElse("").escape}, """
+    if (variables.isDefined) postData += s""" "variables": ${variables.getOrElse("{}").escape}, """
+    postData += s""" "query": ${proxifier.proxify(queryDoc).escape} """
+    postData += "}"
 
-    body
+    // Fetch
+    val res = endpoint.postData(postData).asString
+
+    // Unproxify
+    proxifier.unproxify(res.body)
   }
 
 }

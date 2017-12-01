@@ -10,7 +10,7 @@ class ProxySchema(schemaAst: Document) {
 
 
   case class SType(name: String, fields: Vector[SField])
-  case class SField(name: String, ofType: String, proxy: Option[String]) {
+  case class SField(name: String, ofType: String, proxy: Option[String], fragment: Boolean = false) {
     val proxyFolders: Option[Array[String]] =
       if (proxy.isDefined) Some(proxy.get.replaceAll("\\(.*?\\)", "").split("\\."))
       else None
@@ -60,11 +60,23 @@ class ProxySchema(schemaAst: Document) {
             ofType = aType(SFIELD.fieldType),
             proxy = {
               val func = SFIELD.astDirectives.find(_.name == "Proxy")
-              if (func.isDefined) Some(func.get.arguments.find(_.name == "route").get.value match {
+              if (func.isEmpty) None
+              else Some(func.get.arguments.find(_.name == "route").get.value match {
                 case _val: StringValue => _val.value
                 case _val => _val.toString
               })
-              else None
+            },
+            fragment = {
+              val func = SFIELD.astDirectives.find(_.name == "Proxy")
+              if (func.isEmpty) false
+              else {
+                val fragment = func.get.arguments.find(_.name == "fragment")
+                if (fragment.isEmpty) false
+                else fragment.get.value match {
+                  case _val: BooleanValue => _val.value
+                  case _ => false
+                }
+              }
             }
           )
         }
@@ -81,7 +93,7 @@ class ProxySchema(schemaAst: Document) {
     else if (sfield.get.proxy.isEmpty) Unmapper(field.name, sfield.get.ofType)
     else {
       val arguments = field.arguments.map(f => (f.name, f.value.renderPretty)).toMap
-      Unmapper(sfield.get.proxy.get, sfield.get.ofType, arguments)
+      Unmapper(sfield.get.proxy.get, sfield.get.ofType, arguments, sfield.get.fragment)
     }
   }
 
