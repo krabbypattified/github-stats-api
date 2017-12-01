@@ -2,13 +2,24 @@ package Proxy
 
 import io.circe.Json
 import io.circe.syntax._
-import sangria.ast.Field
+import sangria.ast.{Field, OperationDefinition}
+
 import scala.reflect.runtime.universe._
 
 object Helpers {
 
   implicit class StringHelper(val string: String) {
     def escape: String = Literal(Constant(string)).toString
+  }
+
+  implicit class OperationDefinitionHelper(val op: OperationDefinition) {
+    private val topLine = """(?s)(.*?)\s*\{.*""".r
+    def renderName: String = {
+      op.renderPretty match {
+        case topLine(q) => q
+        case _ => ""
+      }
+    }
   }
 
   implicit class FieldHelper(val field: Field) {

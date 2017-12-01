@@ -9,6 +9,7 @@ lazy val root = (project in file("."))
       guice,
       "org.sangria-graphql" %% "sangria" % "1.3.2",
       "org.scalaj" %% "scalaj-http" % "2.3.0",
+      "com.dripower" %% "play-circe" % "2608.5",
       "io.circe" %% "circe-core" % "0.8.0",
       "io.circe" %% "circe-generic" % "0.8.0",
       "io.circe" %% "circe-parser" % "0.8.0",

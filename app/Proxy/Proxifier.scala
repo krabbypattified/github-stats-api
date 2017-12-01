@@ -22,7 +22,7 @@ class Proxifier(val schemaAst: Document) {
     for (_d <- query.definitions) _d match {
 
       case quer @ OperationDefinition(_,_,_,_,_,_,_,_) =>
-        if (quer.name.isDefined) string += s"query ${quer.name.get} {\n"
+        if (quer.name.isDefined) string += s"${quer.renderName} {\n"
         else string += "{\n"
         for (field <- quer.selections) string += _proxify(field, quer.operationType.toString)
         string += "}\n"

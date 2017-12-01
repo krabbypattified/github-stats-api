@@ -2,7 +2,7 @@ package Proxy
 
 case class Unmapper(var folders: String, ofType: String, arguments: Map[String, String] = Map(), fragment: Boolean = false) {
 
-  if (arguments.nonEmpty) for((key,value) <- arguments) folders = folders.replaceAll(":\\s*"+key, ":"+value)
+  if (arguments.nonEmpty) for((key,value) <- arguments) folders = (":\\s*"+key).r.replaceAllIn(folders, ":"+value.replace("$","\\$"))
 
   private val folderList = folders.split("\\.")
 
