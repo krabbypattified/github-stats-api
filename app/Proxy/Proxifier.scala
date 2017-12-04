@@ -2,18 +2,25 @@ package Proxy
 
 import Helpers._
 import sangria.ast._
-import sangria.validation.{QueryValidator, Violation}
+import sangria.validation.QueryValidator
 import io.circe._
 import io.circe.parser._
 import io.circe.syntax._
+import sangria.parser.QueryParser
 
 class Proxifier(val schemaAst: Document) {
 
   val proxy = new ProxySchema(schemaAst)
 
 
-  def validate(query: Document): Vector[Violation] = {
-    QueryValidator.default.validateQuery(proxy.schema, query)
+  def parseQuery(query: String): Either[String, Document] = {
+    val tryQuery = QueryParser.parse(query).toOption
+    if (tryQuery.isEmpty) Left("""{"errors":["message":"Unable to parse query. Check your syntax."]}""")
+    else {
+      val errors = QueryValidator.default.validateQuery(proxy.schema, tryQuery.get)
+      if (errors.nonEmpty) Left(s"""{"errors":["message":${errors.map(f => f.errorMessage + ", ")}]}""")
+      else Right(tryQuery.get)
+    }
   }
 
   def proxify(query: Document): String = {

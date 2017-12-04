@@ -89,12 +89,17 @@ class ProxySchema(schemaAst: Document) {
 
   def proxifier(field: Field, onType: String): Unmapper = {
     val sfield = getField(field.name, onType)
-    if (sfield.isEmpty) Unmapper(field.name, onType)
-    else if (sfield.get.proxy.isEmpty) Unmapper(field.name, sfield.get.ofType)
-    else {
-      val arguments = field.arguments.map(f => (f.name, f.value.renderPretty)).toMap
-      Unmapper(sfield.get.proxy.get, sfield.get.ofType, arguments, sfield.get.fragment)
-    }
+
+    if (sfield.isEmpty) return Unmapper(field.name, onType)
+
+    val arguments = field.arguments.map(f => (f.name, f.value.renderPretty)).toMap
+
+    if (sfield.get.proxy.isDefined) return Unmapper(sfield.get.proxy.get, sfield.get.ofType, arguments, sfield.get.fragment)
+
+    var prettyArgs = ""
+    if (arguments.nonEmpty) prettyArgs += "(" + arguments.map(f =>f._1+":"+f._2).mkString(",") + ")"
+
+    Unmapper(field.name + prettyArgs, sfield.get.ofType, arguments)
   }
 
   def unproxifier(value: Json, proxyRoot: String, onType: String): Remapper = {

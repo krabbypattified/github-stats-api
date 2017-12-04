@@ -3,7 +3,6 @@ package Proxy
 import Helpers._
 import io.circe.Json
 import sangria.ast.Document
-import sangria.parser.QueryParser
 import io.circe.parser._
 
 import scalaj.http._
@@ -19,22 +18,16 @@ class Proxy(val schemaAst: Document, val endpoint: HttpRequest) {
     val operationName = root.operationName.string.getOption(json)
     val variables = root.variables.json.getOption(json).getOrElse(Json.Null)
 
-    // Parse query
-    if (query.isEmpty) return """{"errors":["message":"Must supply a query."]}"""
-    var queryDoc = Document.emptyStub
-    val tryQuery = QueryParser.parse(query.get).toOption
-    if (tryQuery.isEmpty) return """{"errors":["message":"Unable to parse query. Check your syntax."]}"""
-    else queryDoc = tryQuery.get
-
     // Validate query
-    val errors = proxifier.validate(queryDoc)
-    if (errors.nonEmpty) return s"""{"errors":["message":${errors.toString.escape}]}"""
+    if (query.isEmpty) return """{"errors":["message":"Must supply a query."]}"""
+    val parsedQuery = proxifier.parseQuery(query.get)
+    if (parsedQuery.isLeft) return parsedQuery.left.get
 
     // Proxify
     var postData = "{"
     if (operationName.isDefined) postData += s""" "operationName": ${operationName.getOrElse("").escape}, """
     if (variables != Json.Null) postData += s""" "variables": ${variables.toString}, """
-    postData += s""" "query": ${proxifier.proxify(queryDoc).escape} """
+    postData += s""" "query": ${proxifier.proxify(parsedQuery.right.get).escape} """
     postData += "}"
 
     // Fetch
